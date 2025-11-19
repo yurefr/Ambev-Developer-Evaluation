@@ -47,4 +47,23 @@ public class SaleRepository : ISaleRepository
         await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
+
+    public async Task<(IEnumerable<Sale> Sales, int TotalCount)> GetAllAsync(int page, int size, string? order, CancellationToken cancellationToken = default)
+    {
+        var query = _context.Sales.AsNoTracking();
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+
+        query = string.IsNullOrWhiteSpace(order)
+            ? query.OrderByDescending(s => s.SaleDate)
+            : query.OrderBy(s => s.SaleDate);
+
+        var sales = await query
+            .Skip((page - 1) * size)
+            .Take(size)
+            .ToListAsync(cancellationToken);
+
+        return (sales, totalCount);
+    }
 }

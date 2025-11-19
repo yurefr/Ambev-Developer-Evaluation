@@ -1,4 +1,5 @@
-﻿using Ambev.DeveloperEvaluation.Domain.Events.Sales;
+﻿using Ambev.DeveloperEvaluation.Domain.Enums;
+using Ambev.DeveloperEvaluation.Domain.Events.Sales;
 using Ambev.DeveloperEvaluation.Unit.Domain.Entities.TestData;
 using FluentAssertions;
 using Xunit;
@@ -15,7 +16,9 @@ public class SaleTests
 
         // Assert
         sale.TotalAmount.Value.Should().Be(0);
-        sale.IsCancelled.Should().BeFalse();
+
+        sale.Status.Should().Be(SaleStatus.Active);
+
         sale.DomainEvents.Should().ContainItemsAssignableTo<SaleCreatedEvent>();
     }
 
@@ -103,8 +106,10 @@ public class SaleTests
         sale.Cancel();
 
         // Assert
-        sale.IsCancelled.Should().BeTrue();
+        sale.Status.Should().Be(SaleStatus.Cancelled);
+
         sale.SaleItems.All(i => i.IsCancelled).Should().BeTrue();
+
         sale.DomainEvents.Should().ContainItemsAssignableTo<SaleCancelledEvent>();
     }
 }
