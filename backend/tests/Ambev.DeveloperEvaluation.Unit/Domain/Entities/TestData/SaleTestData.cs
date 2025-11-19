@@ -12,9 +12,6 @@ public static class SaleTestData
             f.Company.CompanyName()
         ));
 
-    /// <summary>
-    /// Generates a valid initialized sale.
-    /// </summary>
     public static Sale GenerateValidSale()
     {
         return SaleFaker.Generate();
