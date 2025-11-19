@@ -32,7 +32,7 @@ public class Sale : BaseEntity
     }
 
     /// <summary>
-    /// Adiciona um item à venda, aplicando as regras de limite e desconto.
+    /// Adds an item to the sale, applying quantity limits and discount rules.
     /// </summary>
     public void AddItem(Guid productId, string productDescription, int quantity, decimal unitPrice)
     {

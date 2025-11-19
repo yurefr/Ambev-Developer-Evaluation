@@ -28,7 +28,7 @@ public class SaleItem : BaseEntity
     }
 
     /// <summary>
-    /// Define o desconto do item e recalcula o total.
+    /// Sets the item discount and recalculates the total amount.
     /// </summary>
     public void SetDiscount(Percentage discount)
     {

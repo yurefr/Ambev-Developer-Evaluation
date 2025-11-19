@@ -13,7 +13,7 @@ public static class SaleTestData
         ));
 
     /// <summary>
-    /// Gera uma venda válida inicializada.
+    /// Generates a valid initialized sale.
     /// </summary>
     public static Sale GenerateValidSale()
     {
@@ -21,8 +21,8 @@ public static class SaleTestData
     }
 
     /// <summary>
-    /// Gera parâmetros válidos para criar um item de venda.
-    /// Retorna uma tupla (ProductId, ProductDescription, Quantity, UnitPrice).
+    /// Generates valid parameters to create a sale item.
+    /// Returns a tuple (ProductId, ProductDescription, Quantity, UnitPrice).
     /// </summary>
     public static (Guid ProductId, string ProductDescription, int Quantity, decimal UnitPrice) GenerateItemParams(int quantity = 1)
     {
