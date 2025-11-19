@@ -20,8 +20,9 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
         builder.Property(s => s.CustomerId).IsRequired();
         builder.Property(s => s.CustomerName).IsRequired().HasMaxLength(100);
         builder.Property(s => s.Branch).IsRequired().HasMaxLength(100);
-        builder.Property(s => s.IsCancelled).IsRequired();
-
+        builder.Property(s => s.Status)
+            .HasConversion<string>()
+            .HasMaxLength(20);
 
         builder.Property(s => s.TotalAmount)
             .HasConversion(
