@@ -8,6 +8,7 @@ using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.WebApi.Middleware;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Rebus.Bus;
 using Serilog;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
@@ -94,6 +95,16 @@ public class Program
             app.UseAuthorization();
 
             app.UseBasicHealthChecks();
+
+            try
+            {
+                var bus = app.Services.GetRequiredService<IBus>();
+                Log.Information("Rebus bus started successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Failed to start Rebus.");
+            }
 
             app.MapControllers();
 

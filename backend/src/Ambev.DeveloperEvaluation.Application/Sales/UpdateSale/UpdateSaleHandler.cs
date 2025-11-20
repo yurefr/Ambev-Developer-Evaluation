@@ -2,8 +2,8 @@
 using AutoMapper;
 using MediatR;
 using FluentValidation;
-using Microsoft.Extensions.Logging;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Rebus.Bus;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
 
@@ -11,16 +11,16 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
 {
     private readonly ISaleRepository _saleRepository;
     private readonly IMapper _mapper;
-    private readonly ILogger<UpdateSaleHandler> _logger;
+    private readonly IBus _bus;
 
     public UpdateSaleHandler(
         ISaleRepository saleRepository,
         IMapper mapper,
-        ILogger<UpdateSaleHandler> logger)
+        IBus bus)
     {
         _saleRepository = saleRepository;
         _mapper = mapper;
-        _logger = logger;
+        _bus = bus;
     }
 
     public async Task<UpdateSaleResult> Handle(UpdateSaleCommand command, CancellationToken cancellationToken)
@@ -46,9 +46,7 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
 
         foreach (var domainEvent in sale.DomainEvents)
         {
-            _logger.LogInformation("Domain Event Published: {EventName} - Data: {@EventData}",
-               domainEvent.GetType().Name,
-               domainEvent);
+            await _bus.Publish(domainEvent);
         }
 
         return _mapper.Map<UpdateSaleResult>(sale);
