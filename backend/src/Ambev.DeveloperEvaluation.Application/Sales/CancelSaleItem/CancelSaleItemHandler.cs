@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using MediatR;
 using FluentValidation;
-using Microsoft.Extensions.Logging;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Rebus.Bus;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.CancelSaleItem;
 
@@ -10,16 +10,16 @@ public class CancelSaleItemHandler : IRequestHandler<CancelSaleItemCommand, Canc
 {
     private readonly ISaleRepository _saleRepository;
     private readonly IMapper _mapper;
-    private readonly ILogger<CancelSaleItemHandler> _logger;
+    private readonly IBus _bus;
 
     public CancelSaleItemHandler(
         ISaleRepository saleRepository,
         IMapper mapper,
-        ILogger<CancelSaleItemHandler> logger)
+        IBus bus)
     {
         _saleRepository = saleRepository;
         _mapper = mapper;
-        _logger = logger;
+        _bus = bus;
     }
 
     public async Task<CancelSaleItemResponse> Handle(CancelSaleItemCommand request, CancellationToken cancellationToken)
@@ -40,9 +40,7 @@ public class CancelSaleItemHandler : IRequestHandler<CancelSaleItemCommand, Canc
 
         foreach (var domainEvent in sale.DomainEvents)
         {
-            _logger.LogInformation("Domain Event Published: {EventName} - Data: {@EventData}",
-               domainEvent.GetType().Name,
-               domainEvent);
+            await _bus.Publish(domainEvent);
         }
 
         return _mapper.Map<CancelSaleItemResponse>(sale);
