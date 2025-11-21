@@ -1,0 +1,423 @@
+{
+	"info": {
+		"_postman_id": "7be261d7-b4b9-4909-b317-3c6b450f041a",
+		"name": "Ambev Evaluation API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "50247498",
+		"_collection_link": "https://yurefr-1406824.postman.co/workspace/Yure-Fran%C3%A7a's-Workspace~2b79692c-3c18-4611-836b-5c52f72a1e07/collection/50247498-7be261d7-b4b9-4909-b317-3c6b450f041a?action=share&source=collection_link&creator=50247498"
+	},
+	"item": [
+		{
+			"name": "Create User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"admin\",\r\n  \"password\": \"Password@123\",\r\n  \"phone\": \"+5511912345678\",\r\n  \"email\": \"admin@ambev.com\",\r\n  \"status\": \"Active\",\r\n  \"role\": \"Admin\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/Users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Token",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"admin@ambev.com\",\r\n  \"password\": \"Password@123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/Auth",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Sale",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"customerId\": \"c2e9f86b-0f32-4ff6-9b7a-b07f0c3ca6b3\",\r\n  \"customerName\": \"Original Customer\",\r\n  \"branch\": \"Original Branch\",\r\n  \"items\": [\r\n    {\r\n      \"productId\": \"8f94b1dd-540d-4b42-9db0-6bafc1b01b8e\",\r\n      \"productDescription\": \"Product One\",\r\n      \"quantity\": 1,\r\n      \"unitPrice\": 10.00\r\n    },\r\n    {\r\n      \"productId\": \"a1420cf2-7b53-4a2d-b52e-bd439a4c48d0\",\r\n      \"productDescription\": \"Product Two\",\r\n      \"quantity\": 2,\r\n      \"unitPrice\": 20.00\r\n    },\r\n    {\r\n      \"productId\": \"f0f1c1b0-6f0a-4a6c-90ed-307e091e50e2\",\r\n      \"productDescription\": \"Product Three\",\r\n      \"quantity\": 3,\r\n      \"unitPrice\": 30.00\r\n    }\r\n  ]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/Sales",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Sales"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Sale (10% Discount)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"customerId\": \"4e97dcd9-8a08-4aad-90c1-39b077230a3a\",\r\n  \"customerName\": \"Postman Test Customer\",\r\n  \"branch\": \"SP Branch\",\r\n  \"items\": [\r\n    {\r\n      \"productId\": \"e2c77d49-e63c-4cdb-829c-143c8f972c80\",\r\n      \"productDescription\": \"Discounted Product\",\r\n      \"quantity\": 5,\r\n      \"unitPrice\": 10.00\r\n    }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/Sales",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Sales"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Sale (20% Discount)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"customerId\": \"d5c7fb6a-6e2a-4f74-bf28-50128db1a9ec\",\r\n  \"customerName\": \"Postman Test Customer\",\r\n  \"branch\": \"BA Branch\",\r\n  \"items\": [\r\n    {\r\n      \"productId\": \"6d6bb92b-2e32-4f94-abfd-e1c365aa9cd6\",\r\n      \"productDescription\": \"Product A\",\r\n      \"quantity\": 10,\r\n      \"unitPrice\": 10.00\r\n    },\r\n    {\r\n      \"productId\": \"f4b8e45d-595b-4e76-bec0-d178a3009b51\",\r\n      \"productDescription\": \"Product B\",\r\n      \"quantity\": 5,\r\n      \"unitPrice\": 20.00\r\n    }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/Sales",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Sales"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Sale (Exceeds Limit)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"customerId\": \"3c4a56b4-c3a2-4e19-bc38-1a8723a19e62\",\r\n  \"customerName\": \"Exceeding Customer\",\r\n  \"branch\": \"Error Branch\",\r\n  \"items\": [\r\n    {\r\n      \"productId\": \"b2b0427b-dde8-4b8b-9c0d-7729fc5ed451\",\r\n      \"productDescription\": \"Exceeding Product\",\r\n      \"quantity\": 21,\r\n      \"unitPrice\": 10.00\r\n    }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/Sales",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Sales"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Sale (Should Fail)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"customerId\": \"c2e9f86b-0f32-4ff6-9b7a-b07f0c3ca6b3\",\r\n  \"customerName\": \"Original Customer\",\r\n  \"branch\": \"Original Branch\",\r\n  \"items\": [\r\n    {\r\n      \"productId\": \"8f94b1dd-540d-4b42-9db0-6bafc1b01b8e\",\r\n      \"productDescription\": \"Product One\",\r\n      \"quantity\": 1,\r\n      \"unitPrice\": 10.00\r\n    },\r\n    {\r\n      \"productId\": \"a1420cf2-7b53-4a2d-b52e-bd439a4c48d0\",\r\n      \"productDescription\": \"Product Two\",\r\n      \"quantity\": 2,\r\n      \"unitPrice\": 20.00\r\n    },\r\n    {\r\n      \"productId\": \"f0f1c1b0-6f0a-4a6c-90ed-307e091e50e2\",\r\n      \"productDescription\": \"Product Three\",\r\n      \"quantity\": 3,\r\n      \"unitPrice\": 30.00\r\n    }\r\n  ]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/Sales",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Sales"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Sale by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/Sales/ebb0f54d-74a1-4aaf-8f0a-b5a14b5325ef",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Sales",
+						"ebb0f54d-74a1-4aaf-8f0a-b5a14b5325ef"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Sale",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/Sales/73851a17-89e7-4ff5-afc1-49c671d14139/cancel",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Sales",
+						"73851a17-89e7-4ff5-afc1-49c671d14139",
+						"cancel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Cancelled Sale (Should Fail)",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"73851a17-89e7-4ff5-afc1-49c671d14139\",\r\n  \"customerId\": \"0c2d9b7d-06f9-46fb-872d-4a2ab3884e70\",\r\n  \"customerName\": \"Modified Customer\",\r\n  \"branch\": \"BA Branch\",\r\n  \"items\": [\r\n    {\r\n      \"productId\": \"c8c42f7f-3cf8-4ed6-9d76-6ad7baa7fa85\",\r\n      \"productDescription\": \"Discounted Product\",\r\n      \"quantity\": 5,\r\n      \"unitPrice\": 10.00\r\n    }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/Sales/73851a17-89e7-4ff5-afc1-49c671d14139",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Sales",
+						"73851a17-89e7-4ff5-afc1-49c671d14139"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Sale",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"b2327754-db54-4cd8-94dc-7c8d08def4f8\",\r\n  \"customerId\": \"d5c7fb6a-6e2a-4f74-bf28-50128db1a9ec\",\r\n  \"customerName\": \"Postman Test Customer\",\r\n  \"branch\": \"BA Branch\",\r\n  \"items\": [\r\n    {\r\n      \"productId\": \"6d6bb92b-2e32-4f94-abfd-e1c365aa9cd6\",\r\n      \"productDescription\": \"Product A\",\r\n      \"quantity\": 10,\r\n      \"unitPrice\": 10.00\r\n    },\r\n    {\r\n      \"productId\": \"f4b8e45d-595b-4e76-bec0-d178a3009b51\",\r\n      \"productDescription\": \"Product B\",\r\n      \"quantity\": 5,\r\n      \"unitPrice\": 20.00\r\n    }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/Sales/b2327754-db54-4cd8-94dc-7c8d08def4f8",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Sales",
+						"b2327754-db54-4cd8-94dc-7c8d08def4f8"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Sale (Check Discount)",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"4ba7e82b-808f-402a-a64d-581c8be3bd4d\",\r\n  \"customerId\": \"d5c7fb6a-6e2a-4f74-bf28-50128db1a9ec\",\r\n  \"customerName\": \"Postman Test Customer - Modified\",\r\n  \"branch\": \"BA Branch\",\r\n  \"items\": [\r\n    {\r\n      \"productId\": \"6d6bb92b-2e32-4f94-abfd-e1c365aa9cd6\",\r\n      \"productDescription\": \"Product A\",\r\n      \"quantity\": 20,\r\n      \"unitPrice\": 10.00\r\n    },\r\n    {\r\n      \"productId\": \"f4b8e45d-595b-4e76-bec0-d178a3009b51\",\r\n      \"productDescription\": \"Product B\",\r\n      \"quantity\": 10,\r\n      \"unitPrice\": 20.00\r\n    }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/Sales/de38f276-cf39-4d27-bcda-fce4ebc25130",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Sales",
+						"de38f276-cf39-4d27-bcda-fce4ebc25130"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Item Sale",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "GetPagedList Sale",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/Sales?_page=1&_size=10&_order=totalAmount asc",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"Sales"
+					],
+					"query": [
+						{
+							"key": "_page",
+							"value": "1"
+						},
+						{
+							"key": "_size",
+							"value": "10"
+						},
+						{
+							"key": "_order",
+							"value": "totalAmount asc"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJjNDM0ZDQxYi00YzdmLTQxNmQtOWRiOS1hNzI0NmFiMjRhZGMiLCJ1bmlxdWVfbmFtZSI6ImFkbWluIiwicm9sZSI6IkN1c3RvbWVyIiwibmJmIjoxNzYzNzI1NDg5LCJleHAiOjE3NjM3NTQyODksImlhdCI6MTc2MzcyNTQ4OX0.xNhK-h891RNKLRB6jC9UMw_YbvGV673Acd-iwSNt4wo",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
