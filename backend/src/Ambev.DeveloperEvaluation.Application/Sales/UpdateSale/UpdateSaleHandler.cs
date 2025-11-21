@@ -35,12 +35,12 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
         if (sale == null)
             throw new KeyNotFoundException($"Sale with ID {command.Id} not found");
 
-        sale.UpdateSaleInfo(command.CustomerId, command.CustomerName, command.Branch);
+        _mapper.Map(command, sale);
 
-        foreach (var item in command.Items)
-        {
-            sale.UpdateItem(item.ProductId, item.ProductDescription, item.Quantity, item.UnitPrice);
-        }
+        var itemsToUpdate = command.Items.Select(i =>
+            (i.ProductId, i.ProductDescription, i.Quantity, i.UnitPrice));
+
+        sale.UpdateItems(itemsToUpdate);
 
         await _saleRepository.UpdateAsync(sale, cancellationToken);
 

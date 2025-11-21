@@ -32,7 +32,6 @@ public class SaleRepository : ISaleRepository
 
     public async Task<Sale> UpdateAsync(Sale sale, CancellationToken cancellationToken = default)
     {
-        _context.Sales.Update(sale);
         await _context.SaveChangesAsync(cancellationToken);
         return sale;
     }
@@ -51,13 +50,27 @@ public class SaleRepository : ISaleRepository
     public async Task<(IEnumerable<Sale> Sales, int TotalCount)> GetAllAsync(int page, int size, string? order, CancellationToken cancellationToken = default)
     {
         var query = _context.Sales.AsNoTracking();
-
         var totalCount = await query.CountAsync(cancellationToken);
 
+        if (string.IsNullOrWhiteSpace(order))
+        {
+            query = query.OrderByDescending(s => s.SaleDate);
+        }
+        else
+        {
+            var parts = order.Trim().Split(' ');
+            var property = parts[0].ToLower();
+            var isDesc = parts.Length > 1 && parts[1].ToLower() == "desc";
 
-        query = string.IsNullOrWhiteSpace(order)
-            ? query.OrderByDescending(s => s.SaleDate)
-            : query.OrderBy(s => s.SaleDate);
+            query = property switch
+            {
+                "saledate" => isDesc ? query.OrderByDescending(s => s.SaleDate) : query.OrderBy(s => s.SaleDate),
+                "customername" => isDesc ? query.OrderByDescending(s => s.CustomerName) : query.OrderBy(s => s.CustomerName),
+                "totalamount" => isDesc ? query.OrderByDescending(s => s.TotalAmount) : query.OrderBy(s => s.TotalAmount),
+                "status" => isDesc ? query.OrderByDescending(s => s.Status) : query.OrderBy(s => s.Status),
+                _ => query.OrderByDescending(s => s.SaleDate)
+            };
+        }
 
         var sales = await query
             .Skip((page - 1) * size)

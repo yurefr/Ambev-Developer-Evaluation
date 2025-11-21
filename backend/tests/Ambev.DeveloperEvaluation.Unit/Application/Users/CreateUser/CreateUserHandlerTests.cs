@@ -8,7 +8,7 @@ using FluentAssertions;
 using NSubstitute;
 using Xunit;
 
-namespace Ambev.DeveloperEvaluation.Unit.Application;
+namespace Ambev.DeveloperEvaluation.Unit.Application.Users.CreateUser;
 
 /// <summary>
 /// Contains unit tests for the <see cref="CreateUserHandler"/> class.
@@ -80,7 +80,7 @@ public class CreateUserHandlerTests
     public async Task Handle_InvalidRequest_ThrowsValidationException()
     {
         // Given
-        var command = new CreateUserCommand(); // Empty command will fail validation
+        var command = new CreateUserCommand();
 
         // When
         var act = () => _handler.Handle(command, CancellationToken.None);
@@ -159,5 +159,23 @@ public class CreateUserHandlerTests
             c.Phone == command.Phone &&
             c.Status == command.Status &&
             c.Role == command.Role));
+    }
+
+    [Fact(DisplayName = "Given existing email When handling Then throws InvalidOperationException")]
+    public async Task Handle_ExistingEmail_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var command = CreateUserHandlerTestData.GenerateValidCommand();
+        var existingUser = new User { Id = Guid.NewGuid(), Email = command.Email };
+
+        _userRepository.GetByEmailAsync(command.Email, Arg.Any<CancellationToken>())
+            .Returns(existingUser);
+
+        // Act
+        var act = () => _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"User with email {command.Email} already exists");
     }
 }

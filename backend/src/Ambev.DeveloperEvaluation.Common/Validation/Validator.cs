@@ -6,12 +6,15 @@ public static class Validator
 {
     public static async Task<IEnumerable<ValidationErrorDetail>> ValidateAsync<T>(T instance)
     {
-        Type validatorType = typeof(IValidator<>).MakeGenericType(typeof(T));
+        var validatorType = typeof(T).Assembly.GetTypes()
+            .FirstOrDefault(t => t.IsClass && !t.IsAbstract && typeof(IValidator<T>).IsAssignableFrom(t));
 
-        if (Activator.CreateInstance(validatorType) is not IValidator validator)
+        if (validatorType is null)
         {
-            throw new InvalidOperationException($"No validator found for: {typeof(T).Name}");
+            throw new InvalidOperationException($"No validator found for type {typeof(T).Name}");
         }
+
+        var validator = (IValidator)Activator.CreateInstance(validatorType)!;
 
         var result = await validator.ValidateAsync(new ValidationContext<T>(instance));
 

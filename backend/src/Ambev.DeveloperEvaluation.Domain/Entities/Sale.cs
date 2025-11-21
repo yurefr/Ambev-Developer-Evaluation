@@ -33,9 +33,17 @@ public class Sale : BaseEntity
     }
 
     /// <summary>
-    /// Adds an item to the sale, applying quantity limits and discount rules.
+    /// Adds an item to the sale.
     /// </summary>
     public void AddItem(Guid productId, string productDescription, int quantity, decimal unitPrice)
+    {
+        AddItemInternal(productId, productDescription, quantity, unitPrice);
+
+        UpdatedAt = DateTime.UtcNow;
+        AddDomainEvent(new SaleModifiedEvent(Id, TotalAmount));
+    }
+
+    private void AddItemInternal(Guid productId, string productDescription, int quantity, decimal unitPrice)
     {
         if (Status == SaleStatus.Cancelled)
             throw new DomainException("Cannot add items to a cancelled sale.");
@@ -60,38 +68,45 @@ public class Sale : BaseEntity
         _saleItems.Add(newItem);
 
         UpdateTotal();
-
-        UpdatedAt = DateTime.UtcNow;
-        AddDomainEvent(new SaleModifiedEvent(Id, TotalAmount));
     }
 
     /// <summary>
-    /// Updates an existing item or adds it if it doesn't exist.
-    /// Replaces the quantity instead of accumulating.
+    /// Updates the sale's items based on a new collection.
     /// </summary>
-    public void UpdateItem(Guid productId, string productDescription, int quantity, decimal unitPrice)
+    public void UpdateItems(IEnumerable<(Guid ProductId, string ProductDescription, int Quantity, decimal UnitPrice)> updatedItems)
     {
         if (Status == SaleStatus.Cancelled)
             throw new DomainException("Cannot modify a cancelled sale.");
 
-        if (quantity > 20)
-            throw new DomainException($"Cannot sell more than 20 identical items. Product: {productDescription}");
+        var updatedItemsList = updatedItems.ToList();
+        var productIdsInUpdate = updatedItemsList.Select(i => i.ProductId).ToHashSet();
 
-        var existingItem = _saleItems.FirstOrDefault(i => i.ProductId == productId);
-
-        if (existingItem != null)
+        var itemsToRemove = _saleItems.Where(i => !productIdsInUpdate.Contains(i.ProductId)).ToList();
+        foreach (var item in itemsToRemove)
         {
-            _saleItems.Remove(existingItem);
+            _saleItems.Remove(item);
         }
 
-        var discount = CalculateDiscount(quantity);
-        var newItem = new SaleItem(productId, productDescription, new Quantity(quantity), new Money(unitPrice));
-        newItem.SetDiscount(discount);
+        foreach (var itemDto in updatedItemsList)
+        {
+            var existingItem = _saleItems.FirstOrDefault(i => i.ProductId == itemDto.ProductId);
 
-        _saleItems.Add(newItem);
+            if (existingItem != null)
+            {
+                if (itemDto.Quantity > 20)
+                    throw new DomainException($"Cannot sell more than 20 identical items. Product: {itemDto.ProductDescription}");
+
+                existingItem.UpdateDetails(itemDto.Quantity, itemDto.UnitPrice, itemDto.ProductDescription);
+                var discount = CalculateDiscount(itemDto.Quantity);
+                existingItem.SetDiscount(discount);
+            }
+            else
+            {
+                AddItemInternal(itemDto.ProductId, itemDto.ProductDescription, itemDto.Quantity, itemDto.UnitPrice);
+            }
+        }
 
         UpdateTotal();
-
         UpdatedAt = DateTime.UtcNow;
         AddDomainEvent(new SaleModifiedEvent(Id, TotalAmount));
     }
@@ -152,21 +167,21 @@ public class Sale : BaseEntity
         decimal total = 0;
         foreach (var item in _saleItems)
         {
-            total += (decimal)item.TotalAmount;
+            if (!item.IsCancelled)
+            {
+                total += (decimal)item.TotalAmount;
+            }
         }
         TotalAmount = new Money(total);
     }
 
     private Percentage CalculateDiscount(int quantity)
     {
-        if (quantity < 4)
-            return 0m;
-
-        if (quantity >= 4 && quantity < 10)
-            return 0.10m;
-
-        if (quantity >= 10 && quantity <= 20)
+        if (quantity >= 10)
             return 0.20m;
+
+        if (quantity >= 4)
+            return 0.10m;
 
         return 0m;
     }

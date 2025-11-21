@@ -10,6 +10,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Rebus.Bus;
 using Serilog;
+using System.Text.Json.Serialization;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
 
@@ -24,7 +25,12 @@ public class Program
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
             builder.AddDefaultLogging();
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
+
             builder.Services.AddEndpointsApiExplorer();
 
             builder.AddBasicHealthChecks();
@@ -88,9 +94,6 @@ public class Program
                 app.UseSwaggerUI();
             }
 
-            // Disables HTTPS redirect to work correctly in containers (Docker).
-            // app.UseHttpsRedirection();
-
             app.UseAuthentication();
             app.UseAuthorization();
 
@@ -107,6 +110,23 @@ public class Program
             }
 
             app.MapControllers();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                try
+                {
+                    logger.LogInformation("Attempting to apply database migrations...");
+                    var dbContext = services.GetRequiredService<DefaultContext>();
+                    dbContext.Database.Migrate();
+                    logger.LogInformation("Database migrations applied successfully.");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogCritical(ex, "An error occurred while applying database migrations.");
+                }
+            }
 
             app.Run();
         }
