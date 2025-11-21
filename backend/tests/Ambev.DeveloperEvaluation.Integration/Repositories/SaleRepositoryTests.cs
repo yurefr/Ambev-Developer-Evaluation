@@ -106,4 +106,32 @@ public class SaleRepositoryTests
         var deletedSale = await _context.Sales.FirstOrDefaultAsync(s => s.Id == sale.Id);
         deletedSale.Should().BeNull();
     }
+
+    [Fact(DisplayName = "GetAll should order by TotalAmount Descending")]
+    public async Task GetAll_OrdersByTotalAmountDesc()
+    {
+        // Arrange
+        var saleSmall = SaleTestData.GenerateValidSale();
+        saleSmall.AddItem(Guid.NewGuid(), "Item Barato", 1, 10m);
+
+        var saleBig = SaleTestData.GenerateValidSale();
+        saleBig.AddItem(Guid.NewGuid(), "Item Caro", 1, 1000000m);
+
+        await _saleRepository.CreateAsync(saleSmall);
+        await _saleRepository.CreateAsync(saleBig);
+
+        // Act
+        var result = await _saleRepository.GetAllAsync(1, 10, "totalAmount desc");
+
+        // Assert
+        result.Sales.Should().NotBeEmpty();
+        result.Sales.First().Id.Should().Be(saleBig.Id);
+        result.Sales.Should().Contain(s => s.Id == saleSmall.Id);
+
+        if (result.Sales.Count() >= 2)
+        {
+            result.Sales.First().TotalAmount.Value.Should()
+                .BeGreaterThan(result.Sales.Last().TotalAmount.Value);
+        }
+    }
 }

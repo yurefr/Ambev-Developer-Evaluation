@@ -13,6 +13,7 @@ public class CreateUserProfile : Profile
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.DomainEvents, opt => opt.Ignore());
 
-        CreateMap<User, CreateUserResult>();
+        CreateMap<User, CreateUserResult>()
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Username));
     }
 }
