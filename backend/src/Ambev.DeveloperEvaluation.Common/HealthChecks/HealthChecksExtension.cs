@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
 
 namespace Ambev.DeveloperEvaluation.Common.HealthChecks;
@@ -15,6 +16,7 @@ namespace Ambev.DeveloperEvaluation.Common.HealthChecks;
 /// This class contains methods for both adding health checks to the service collection
 /// and configuring health check endpoints in the application pipeline.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public static class HealthChecksExtension
 {
     /// <summary>

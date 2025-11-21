@@ -4,7 +4,7 @@ namespace Ambev.DeveloperEvaluation.Domain.Common;
 
 public class BaseEntity : IComparable<BaseEntity>
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
@@ -24,7 +24,7 @@ public class BaseEntity : IComparable<BaseEntity>
 
     public Task<IEnumerable<ValidationErrorDetail>> ValidateAsync()
     {
-        return Validator.ValidateAsync(this);
+        return Validator.ValidateAsync((dynamic)this);
     }
 
     public int CompareTo(BaseEntity? other)
@@ -34,6 +34,6 @@ public class BaseEntity : IComparable<BaseEntity>
             return 1;
         }
 
-        return other!.Id.CompareTo(Id);
+        return Id.CompareTo(other.Id);
     }
 }

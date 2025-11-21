@@ -1,6 +1,8 @@
+using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Unit.Domain.Entities.TestData;
+using FluentAssertions;
 using Xunit;
 
 namespace Ambev.DeveloperEvaluation.Unit.Domain.Entities;
@@ -85,5 +87,46 @@ public class UserTests
         // Assert
         Assert.False(result.IsValid);
         Assert.NotEmpty(result.Errors);
+    }
+
+    /// <summary>
+    /// Verifies that the explicit implementation of the IUser interface
+    /// returns the correct values for Id, Username, and Role based on
+    /// the concrete User instance.
+    /// </summary>
+
+    [Fact(DisplayName = "IUser interface implementation should return correct values")]
+    public void IUser_Implementation_ReturnsCorrectValues()
+    {
+        // Arrange
+        var user = UserTestData.GenerateValidUser();
+
+        // Act
+        var iUser = (IUser)user;
+
+        // Assert
+        iUser.Id.Should().Be(user.Id.ToString());
+        iUser.Username.Should().Be(user.Username);
+        iUser.Role.Should().Be(user.Role.ToString());
+    }
+
+    /// <summary>
+    /// Ensures that when an active user is deactivated, the user's status
+    /// is updated to Inactive and the UpdatedAt timestamp is populated.
+    /// </summary>
+
+    [Fact(DisplayName = "User status should change to Inactive when deactivated")]
+    public void Given_ActiveUser_When_Deactivated_Then_StatusShouldBeInactive()
+    {
+        // Arrange
+        var user = UserTestData.GenerateValidUser();
+        user.Activate();
+
+        // Act
+        user.Deactivate();
+
+        // Assert
+        Assert.Equal(UserStatus.Inactive, user.Status);
+        Assert.NotNull(user.UpdatedAt);
     }
 }

@@ -66,10 +66,33 @@ public class Sale : BaseEntity
     }
 
     /// <summary>
-    /// Updates an existing item or adds it if it doesn't exist.
-    /// Replaces the quantity instead of accumulating.
+    /// Updates a single item.
     /// </summary>
     public void UpdateItem(Guid productId, string productDescription, int quantity, decimal unitPrice)
+    {
+        UpsertItemInternal(productId, productDescription, quantity, unitPrice);
+
+        UpdateTotal();
+        UpdatedAt = DateTime.UtcNow;
+        AddDomainEvent(new SaleModifiedEvent(Id, TotalAmount));
+    }
+
+    /// <summary>
+    /// Updates multiple items.
+    /// </summary>
+    public void UpdateItems(IEnumerable<(Guid ProductId, string ProductDescription, int Quantity, decimal UnitPrice)> items)
+    {
+        foreach (var item in items)
+        {
+            UpsertItemInternal(item.ProductId, item.ProductDescription, item.Quantity, item.UnitPrice);
+        }
+
+        UpdateTotal();
+        UpdatedAt = DateTime.UtcNow;
+        AddDomainEvent(new SaleModifiedEvent(Id, TotalAmount));
+    }
+
+    private void UpsertItemInternal(Guid productId, string productDescription, int quantity, decimal unitPrice)
     {
         if (Status == SaleStatus.Cancelled)
             throw new DomainException("Cannot modify a cancelled sale.");
@@ -89,11 +112,6 @@ public class Sale : BaseEntity
         newItem.SetDiscount(discount);
 
         _saleItems.Add(newItem);
-
-        UpdateTotal();
-
-        UpdatedAt = DateTime.UtcNow;
-        AddDomainEvent(new SaleModifiedEvent(Id, TotalAmount));
     }
 
     public void UpdateSaleInfo(Guid customerId, string customerName, string branch)
@@ -152,21 +170,21 @@ public class Sale : BaseEntity
         decimal total = 0;
         foreach (var item in _saleItems)
         {
-            total += (decimal)item.TotalAmount;
+            if (!item.IsCancelled)
+            {
+                total += (decimal)item.TotalAmount;
+            }
         }
         TotalAmount = new Money(total);
     }
 
     private Percentage CalculateDiscount(int quantity)
     {
-        if (quantity < 4)
-            return 0m;
-
-        if (quantity >= 4 && quantity < 10)
-            return 0.10m;
-
-        if (quantity >= 10 && quantity <= 20)
+        if (quantity >= 10)
             return 0.20m;
+
+        if (quantity >= 4)
+            return 0.10m;
 
         return 0m;
     }
