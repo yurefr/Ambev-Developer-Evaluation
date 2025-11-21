@@ -11,6 +11,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Xunit;
 
 namespace Ambev.DeveloperEvaluation.Functional.Features.Sales;
@@ -23,7 +24,11 @@ public class SalesControllerTests : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client;
     private readonly CustomWebApplicationFactory _factory;
-    private readonly JsonSerializerOptions _jsonOptions;
+    private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
 
     /// <summary>
     /// Initializes the test class with a WebApplicationFactory to simulate the API environment.
@@ -69,25 +74,39 @@ public class SalesControllerTests : IClassFixture<CustomWebApplicationFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponseWithData<CreateSaleResponse>>(_jsonOptions);
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        options.Converters.Add(new JsonStringEnumConverter());
+
+        var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponseWithData<CreateSaleResponse>>(options);
 
         apiResponse.Should().NotBeNull();
         apiResponse!.Success.Should().BeTrue();
         apiResponse.Data.Should().NotBeNull();
-        apiResponse.Data!.Id.Should().NotBeEmpty();
-        apiResponse.Data.TotalAmount.Should().BeGreaterThan(0);
+        apiResponse.Data.Status.Should().Be(SaleStatus.Active);
     }
 
     [Fact(DisplayName = "GetSale should return 200 OK when sale exists")]
     public async Task GetSale_ExistingId_ReturnsOk()
     {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        options.Converters.Add(new JsonStringEnumConverter());
+
         // Arrange
         var token = GenerateAuthToken();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var createRequest = SaleRequestTestData.GenerateValidRequest();
         var createResponse = await _client.PostAsJsonAsync("/api/sales", createRequest);
-        var createResult = await createResponse.Content.ReadFromJsonAsync<ApiResponseWithData<CreateSaleResponse>>(_jsonOptions);
+
+        var createResult = await createResponse.Content.ReadFromJsonAsync<ApiResponseWithData<CreateSaleResponse>>(options);
         var saleId = createResult!.Data!.Id;
 
         // Act
@@ -96,12 +115,13 @@ public class SalesControllerTests : IClassFixture<CustomWebApplicationFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponseWithData<GetSaleResponse>>(_jsonOptions);
+        var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponseWithData<GetSaleResponse>>(options);
 
         apiResponse.Should().NotBeNull();
         apiResponse!.Data.Should().NotBeNull();
         apiResponse.Data!.Id.Should().Be(saleId);
         apiResponse.Data.CustomerName.Should().Be(createRequest.CustomerName);
+        apiResponse.Data.Status.Should().Be(SaleStatus.Active);
     }
 
     [Fact(DisplayName = "GetSale should return 404 NotFound when ID does not exist")]

@@ -32,7 +32,6 @@ public class SaleRepository : ISaleRepository
 
     public async Task<Sale> UpdateAsync(Sale sale, CancellationToken cancellationToken = default)
     {
-        _context.Sales.Update(sale);
         await _context.SaveChangesAsync(cancellationToken);
         return sale;
     }

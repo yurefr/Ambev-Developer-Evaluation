@@ -20,6 +20,7 @@ public class CreateSaleResult
 
 public class CreateSaleItemResult
 {
+    public Guid Id { get; set; }
     public Guid ProductId { get; set; }
     public string ProductDescription { get; set; } = string.Empty;
     public int Quantity { get; set; }

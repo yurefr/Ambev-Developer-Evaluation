@@ -33,9 +33,17 @@ public class Sale : BaseEntity
     }
 
     /// <summary>
-    /// Adds an item to the sale, applying quantity limits and discount rules.
+    /// Adds an item to the sale.
     /// </summary>
     public void AddItem(Guid productId, string productDescription, int quantity, decimal unitPrice)
+    {
+        AddItemInternal(productId, productDescription, quantity, unitPrice);
+
+        UpdatedAt = DateTime.UtcNow;
+        AddDomainEvent(new SaleModifiedEvent(Id, TotalAmount));
+    }
+
+    private void AddItemInternal(Guid productId, string productDescription, int quantity, decimal unitPrice)
     {
         if (Status == SaleStatus.Cancelled)
             throw new DomainException("Cannot add items to a cancelled sale.");
@@ -60,58 +68,47 @@ public class Sale : BaseEntity
         _saleItems.Add(newItem);
 
         UpdateTotal();
-
-        UpdatedAt = DateTime.UtcNow;
-        AddDomainEvent(new SaleModifiedEvent(Id, TotalAmount));
     }
 
     /// <summary>
-    /// Updates a single item.
+    /// Updates the sale's items based on a new collection.
     /// </summary>
-    public void UpdateItem(Guid productId, string productDescription, int quantity, decimal unitPrice)
-    {
-        UpsertItemInternal(productId, productDescription, quantity, unitPrice);
-
-        UpdateTotal();
-        UpdatedAt = DateTime.UtcNow;
-        AddDomainEvent(new SaleModifiedEvent(Id, TotalAmount));
-    }
-
-    /// <summary>
-    /// Updates multiple items.
-    /// </summary>
-    public void UpdateItems(IEnumerable<(Guid ProductId, string ProductDescription, int Quantity, decimal UnitPrice)> items)
-    {
-        foreach (var item in items)
-        {
-            UpsertItemInternal(item.ProductId, item.ProductDescription, item.Quantity, item.UnitPrice);
-        }
-
-        UpdateTotal();
-        UpdatedAt = DateTime.UtcNow;
-        AddDomainEvent(new SaleModifiedEvent(Id, TotalAmount));
-    }
-
-    private void UpsertItemInternal(Guid productId, string productDescription, int quantity, decimal unitPrice)
+    public void UpdateItems(IEnumerable<(Guid ProductId, string ProductDescription, int Quantity, decimal UnitPrice)> updatedItems)
     {
         if (Status == SaleStatus.Cancelled)
             throw new DomainException("Cannot modify a cancelled sale.");
 
-        if (quantity > 20)
-            throw new DomainException($"Cannot sell more than 20 identical items. Product: {productDescription}");
+        var updatedItemsList = updatedItems.ToList();
+        var productIdsInUpdate = updatedItemsList.Select(i => i.ProductId).ToHashSet();
 
-        var existingItem = _saleItems.FirstOrDefault(i => i.ProductId == productId);
-
-        if (existingItem != null)
+        var itemsToRemove = _saleItems.Where(i => !productIdsInUpdate.Contains(i.ProductId)).ToList();
+        foreach (var item in itemsToRemove)
         {
-            _saleItems.Remove(existingItem);
+            _saleItems.Remove(item);
         }
 
-        var discount = CalculateDiscount(quantity);
-        var newItem = new SaleItem(productId, productDescription, new Quantity(quantity), new Money(unitPrice));
-        newItem.SetDiscount(discount);
+        foreach (var itemDto in updatedItemsList)
+        {
+            var existingItem = _saleItems.FirstOrDefault(i => i.ProductId == itemDto.ProductId);
 
-        _saleItems.Add(newItem);
+            if (existingItem != null)
+            {
+                if (itemDto.Quantity > 20)
+                    throw new DomainException($"Cannot sell more than 20 identical items. Product: {itemDto.ProductDescription}");
+
+                existingItem.UpdateDetails(itemDto.Quantity, itemDto.UnitPrice, itemDto.ProductDescription);
+                var discount = CalculateDiscount(itemDto.Quantity);
+                existingItem.SetDiscount(discount);
+            }
+            else
+            {
+                AddItemInternal(itemDto.ProductId, itemDto.ProductDescription, itemDto.Quantity, itemDto.UnitPrice);
+            }
+        }
+
+        UpdateTotal();
+        UpdatedAt = DateTime.UtcNow;
+        AddDomainEvent(new SaleModifiedEvent(Id, TotalAmount));
     }
 
     public void UpdateSaleInfo(Guid customerId, string customerName, string branch)

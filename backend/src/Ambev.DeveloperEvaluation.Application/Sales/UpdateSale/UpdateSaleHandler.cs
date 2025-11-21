@@ -35,10 +35,10 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
         if (sale == null)
             throw new KeyNotFoundException($"Sale with ID {command.Id} not found");
 
-        sale.UpdateSaleInfo(command.CustomerId, command.CustomerName, command.Branch);
+        _mapper.Map(command, sale);
 
         var itemsToUpdate = command.Items.Select(i =>
-           (i.ProductId, i.ProductDescription, i.Quantity, i.UnitPrice));
+            (i.ProductId, i.ProductDescription, i.Quantity, i.UnitPrice));
 
         sale.UpdateItems(itemsToUpdate);
 

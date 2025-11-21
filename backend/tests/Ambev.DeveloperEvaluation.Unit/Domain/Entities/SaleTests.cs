@@ -149,19 +149,24 @@ public class SaleTests
            .WithMessage("Cannot modify a cancelled sale.");
     }
 
-    [Fact(DisplayName = "UpdateItem (Single) should update existing item quantity")]
-    public void UpdateItem_ExistingItem_UpdatesQuantity()
+    [Fact(DisplayName = "UpdateItems should update existing item quantity")]
+    public void UpdateItems_ExistingItem_UpdatesQuantity()
     {
         // Arrange
         var sale = SaleTestData.GenerateValidSale();
         var (productId, desc, _, unitPrice) = SaleTestData.GenerateItemParams();
+
         sale.AddItem(productId, desc, 1, unitPrice);
 
         // Act
-        sale.UpdateItem(productId, desc, 5, unitPrice);
+        var updatedItemsList = new List<(Guid ProductId, string ProductDescription, int Quantity, decimal UnitPrice)>
+        {(productId, desc, 5, unitPrice)};
+
+        sale.UpdateItems(updatedItemsList);
 
         // Assert
         var item = sale.SaleItems.First(i => i.ProductId == productId);
+
         item.Quantity.Value.Should().Be(5);
         item.Discount.Value.Should().Be(0.10m);
     }
@@ -227,33 +232,87 @@ public class SaleTests
         item.Discount.Value.Should().Be(0.10m);
     }
 
-    [Fact(DisplayName = "UpdateItem should throw exception if sale is cancelled")]
-    public void UpdateItem_CancelledSale_ThrowsException()
+    [Fact(DisplayName = "UpdateItems should throw exception if sale is cancelled")]
+    public void UpdateItems_CancelledSale_ThrowsException()
     {
         // Arrange
         var sale = SaleTestData.GenerateValidSale();
         sale.Cancel();
 
+        var itemsToUpdate = new List<(Guid ProductId, string ProductDescription, int Quantity, decimal UnitPrice)>
+        { (Guid.NewGuid(), "Desc", 1, 10m)};
+
         // Act
-        Action act = () => sale.UpdateItem(Guid.NewGuid(), "Desc", 1, 10m);
+        Action act = () => sale.UpdateItems(itemsToUpdate);
 
         // Assert
         act.Should().Throw<DomainException>()
            .WithMessage("Cannot modify a cancelled sale.");
     }
 
-    [Fact(DisplayName = "UpdateItem should throw exception if quantity exceeds 20")]
-    public void UpdateItem_QuantityExceedsLimit_ThrowsException()
+    [Fact(DisplayName = "UpdateItems should throw exception if quantity exceeds 20")]
+    public void UpdateItems_QuantityExceedsLimit_ThrowsException()
     {
         // Arrange
         var sale = SaleTestData.GenerateValidSale();
 
+        var itemsToUpdate = new List<(Guid ProductId, string ProductDescription, int Quantity, decimal UnitPrice)>
+        {(Guid.NewGuid(), "Desc", 21, 10m)};
+
         // Act
-        Action act = () => sale.UpdateItem(Guid.NewGuid(), "Desc", 21, 10m);
+        Action act = () => sale.UpdateItems(itemsToUpdate);
 
         // Assert
         act.Should().Throw<DomainException>()
            .WithMessage("*Cannot sell more than 20*");
+    }
+
+    [Fact(DisplayName = "UpdateItems should remove items that are not present in the updated list")]
+    public void UpdateItems_MissingItemInList_RemovesItemFromSale()
+    {
+        // Arrange
+        var sale = SaleTestData.GenerateValidSale();
+        var itemToKeep = SaleTestData.GenerateItemParams();
+        var itemToRemove = SaleTestData.GenerateItemParams();
+
+        sale.AddItem(itemToKeep.ProductId, itemToKeep.ProductDescription, 1, 10m);
+        sale.AddItem(itemToRemove.ProductId, itemToRemove.ProductDescription, 1, 10m);
+        sale.SaleItems.Should().HaveCount(2);
+
+        var updatedList = new List<(Guid ProductId, string ProductDescription, int Quantity, decimal UnitPrice)>
+        {
+            (itemToKeep.ProductId, itemToKeep.ProductDescription, 5, 10m)
+        };
+
+        // Act
+        sale.UpdateItems(updatedList);
+
+        // Assert
+        sale.SaleItems.Should().HaveCount(1);
+        sale.SaleItems.First().ProductId.Should().Be(itemToKeep.ProductId);
+        sale.SaleItems.Any(i => i.ProductId == itemToRemove.ProductId).Should().BeFalse();
+    }
+
+    [Fact(DisplayName = "UpdateItems should throw exception when updating an EXISTING item with quantity > 20")]
+    public void UpdateItems_ExistingItemWithExcessiveQuantity_ThrowsDomainException()
+    {
+        // Arrange
+        var sale = SaleTestData.GenerateValidSale();
+        var (productId, desc, _, unitPrice) = SaleTestData.GenerateItemParams();
+
+        sale.AddItem(productId, desc, 1, unitPrice);
+
+        var updatedList = new List<(Guid ProductId, string ProductDescription, int Quantity, decimal UnitPrice)>
+        {
+            (productId, desc, 21, unitPrice)
+        };
+
+        // Act
+        Action act = () => sale.UpdateItems(updatedList);
+
+        // Assert
+        act.Should().Throw<DomainException>()
+            .WithMessage($"Cannot sell more than 20 identical items. Product: {desc}");
     }
 
     [Fact(DisplayName = "CancelItem should throw exception if item is already cancelled")]

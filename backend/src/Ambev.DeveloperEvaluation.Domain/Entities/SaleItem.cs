@@ -41,6 +41,18 @@ public class SaleItem : BaseEntity
         IsCancelled = true;
     }
 
+    /// <summary>
+    /// Updates the details of an existing sale item.
+    /// </summary>
+    public void UpdateDetails(Quantity newQuantity, Money newUnitPrice, string newProductDescription)
+    {
+        Quantity = newQuantity;
+        UnitPrice = newUnitPrice;
+        ProductDescription = newProductDescription;
+
+        CalculateTotal();
+    }
+
     private void CalculateTotal()
     {
         decimal total = (decimal)Quantity * (decimal)UnitPrice;
